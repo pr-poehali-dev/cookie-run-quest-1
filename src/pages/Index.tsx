@@ -21,6 +21,7 @@ export default function Index() {
   const [animationEffect, setAnimationEffect] = useState<string | null>(null);
   const [isHurt, setIsHurt] = useState(false);
   const [isHappy, setIsHappy] = useState(false);
+  const [isEating, setIsEating] = useState(false);
 
   const outfits = [
     {
@@ -70,6 +71,7 @@ export default function Index() {
   const feedCookie = () => {
     if (coins >= 10) {
       setCoins(prev => prev - 10);
+      setIsEating(true);
       setStats(prev => ({
         ...prev,
         hunger: Math.min(100, prev.hunger + 25),
@@ -79,6 +81,7 @@ export default function Index() {
         title: "Ням-ням! 🍰",
         description: "Affogato Cookie доволен вкусным угощением!",
       });
+      setTimeout(() => setIsEating(false), 3000);
     } else {
       toast({
         title: "Недостаточно монет! 💰",
@@ -235,6 +238,8 @@ export default function Index() {
                         ? "https://cdn.poehali.dev/files/5b7ebc9b-a617-436d-82ac-f23dd416b910.png" 
                         : isHappy && currentOutfit === 0 
                         ? "https://cdn.poehali.dev/files/7c390821-37f8-4c81-982f-f0d25b707ae4.png"
+                        : isEating && currentOutfit === 0
+                        ? "https://cdn.poehali.dev/files/2c8c69c3-2e60-472d-8051-5cb717c7c514.jpg"
                         : outfits[currentOutfit].image
                     }
                     alt="Affogato Cookie"
