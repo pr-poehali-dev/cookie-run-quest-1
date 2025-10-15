@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Icon from "@/components/ui/icon";
 import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -15,12 +16,28 @@ export default function Index() {
   });
   const [coins, setCoins] = useState(100);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showWardrobe, setShowWardrobe] = useState(false);
+  const [currentOutfit, setCurrentOutfit] = useState(0);
   const [animationEffect, setAnimationEffect] = useState<string | null>(null);
   const [isHurt, setIsHurt] = useState(false);
   const [isHappy, setIsHappy] = useState(false);
   const [isEating, setIsEating] = useState(false);
+  const [ownedOutfits, setOwnedOutfits] = useState<number[]>([0]);
 
-  const characterImage = "https://cdn.poehali.dev/files/44cafd08-2350-4055-96a2-31af2762a139.png";
+  const outfits = [
+    {
+      id: 0,
+      name: "Оригинальный облик",
+      image: "https://cdn.poehali.dev/files/44cafd08-2350-4055-96a2-31af2762a139.png",
+      cost: 0
+    },
+    {
+      id: 1,
+      name: "Affogato Lily",
+      image: "https://cdn.poehali.dev/files/b6501871-2570-423c-9f15-80a4fc710028.jpg",
+      cost: 100
+    }
+  ];
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -131,6 +148,36 @@ export default function Index() {
     setTimeout(() => setIsHurt(false), 3000);
   };
 
+  const changeOutfit = (outfitId: number) => {
+    const outfit = outfits.find(o => o.id === outfitId);
+    if (!outfit) return;
+
+    if (!ownedOutfits.includes(outfitId)) {
+      if (coins < outfit.cost) {
+        toast({
+          title: "Недостаточно монет! 💰",
+          description: `Нужно ${outfit.cost} монет для покупки`,
+          variant: "destructive"
+        });
+        return;
+      }
+      setCoins(prev => prev - outfit.cost);
+      setOwnedOutfits(prev => [...prev, outfitId]);
+    }
+
+    setCurrentOutfit(outfitId);
+    setShowWardrobe(false);
+    setStats(prev => ({
+      ...prev,
+      happiness: Math.min(100, prev.happiness + 10)
+    }));
+    
+    toast({
+      title: "Модно! ✨",
+      description: `Affogato Cookie надел ${outfit.name}!`,
+    });
+  };
+
   const getMoodEmoji = () => {
     if (stats.happiness > 70) return "😊";
     if (stats.happiness > 40) return "😐";
@@ -176,13 +223,15 @@ export default function Index() {
                 <div className={`relative mx-auto w-full max-w-md aspect-square rounded-3xl overflow-hidden border-8 border-white shadow-2xl ${isPlaying ? 'animate-bounce-slow' : 'animate-float'}`}>
                   <img
                     src={
-                      isHurt 
-                        ? "https://cdn.poehali.dev/files/5b7ebc9b-a617-436d-82ac-f23dd416b910.png" 
-                        : isHappy 
-                        ? "https://cdn.poehali.dev/files/7c390821-37f8-4c81-982f-f0d25b707ae4.png"
-                        : isEating
-                        ? "https://cdn.poehali.dev/files/2c8c69c3-2e60-472d-8051-5cb717c7c514.jpg"
-                        : characterImage
+                      currentOutfit === 0 ? (
+                        isHurt 
+                          ? "https://cdn.poehali.dev/files/5b7ebc9b-a617-436d-82ac-f23dd416b910.png" 
+                          : isHappy 
+                          ? "https://cdn.poehali.dev/files/7c390821-37f8-4c81-982f-f0d25b707ae4.png"
+                          : isEating
+                          ? "https://cdn.poehali.dev/files/2c8c69c3-2e60-472d-8051-5cb717c7c514.jpg"
+                          : outfits[0].image
+                      ) : outfits[currentOutfit].image
                     }
                     alt="Affogato Cookie"
                     className="w-full h-full object-cover"
@@ -206,7 +255,7 @@ export default function Index() {
 
                 <div className="mt-6 text-center">
                   <h2 className="text-3xl font-black mb-2">Affogato Cookie</h2>
-                  <p className="text-foreground/70 font-medium">Коварный советник с силой иллюзий</p>
+                  <p className="text-foreground/70 font-medium">{outfits[currentOutfit].name}</p>
                 </div>
               </div>
             </Card>
@@ -298,6 +347,14 @@ export default function Index() {
                     <Icon name="Zap" size={20} />
                     Ударить
                   </Button>
+
+                  <Button
+                    onClick={() => setShowWardrobe(true)}
+                    className="bg-gradient-to-r from-purple-500 to-purple-700 hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-white"
+                  >
+                    <Icon name="Shirt" size={20} />
+                    Гардероб
+                  </Button>
                 </div>
               </Card>
 
@@ -319,12 +376,65 @@ export default function Index() {
                     <span className="text-accent">•</span>
                     <span>Не бейте печеньку - это очень плохо!</span>
                   </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-purple-500">•</span>
+                    <span>Покупайте новые скины в гардеробе</span>
+                  </li>
                 </ul>
               </Card>
             </div>
           </div>
         </div>
       </section>
+
+      <Dialog open={showWardrobe} onOpenChange={setShowWardrobe}>
+        <DialogContent className="max-w-3xl border-4 border-primary/30">
+          <DialogHeader>
+            <DialogTitle className="text-3xl font-black text-center bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              👔 Гардероб Affogato Cookie
+            </DialogTitle>
+            <DialogDescription className="text-center text-foreground/70 font-medium">
+              Выбери стильный наряд для своей печеньки!
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid md:grid-cols-2 gap-6 p-4">
+            {outfits.map((outfit) => (
+              <Card
+                key={outfit.id}
+                className={`cursor-pointer transition-all hover:scale-105 border-4 ${
+                  currentOutfit === outfit.id ? 'border-primary shadow-2xl' : 'border-primary/20'
+                }`}
+                onClick={() => changeOutfit(outfit.id)}
+              >
+                <div className="aspect-square overflow-hidden rounded-t-xl">
+                  <img
+                    src={outfit.image}
+                    alt={outfit.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-6 text-center space-y-3">
+                  <h4 className="font-black text-xl">{outfit.name}</h4>
+                  {ownedOutfits.includes(outfit.id) ? (
+                    <div className="bg-gradient-to-r from-green-400 to-green-600 px-6 py-3 rounded-full inline-block">
+                      <span className="font-black text-white text-lg">✓ Куплено</span>
+                    </div>
+                  ) : outfit.cost === 0 ? (
+                    <div className="bg-gradient-to-r from-blue-400 to-blue-600 px-6 py-3 rounded-full inline-block">
+                      <span className="font-black text-white text-lg">🎁 Бесплатно</span>
+                    </div>
+                  ) : (
+                    <div className="bg-gradient-to-r from-secondary to-primary px-6 py-3 rounded-full inline-block border-2 border-foreground/20">
+                      <span className="font-black text-foreground text-lg">💰 {outfit.cost}</span>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <footer className="py-6 px-4 border-t-4 border-primary/30 bg-white/50">
         <div className="container mx-auto text-center">
