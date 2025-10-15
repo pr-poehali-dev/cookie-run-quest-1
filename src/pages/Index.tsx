@@ -44,7 +44,7 @@ export default function Index() {
   ];
 
   useEffect(() => {
-    if (isDead) return;
+    if (isDead || showDeathAnimation) return;
     
     const interval = setInterval(() => {
       setStats(prev => {
@@ -65,22 +65,22 @@ export default function Index() {
     }, 4000);
 
     return () => clearInterval(interval);
-  }, [isDead]);
+  }, [isDead, showDeathAnimation]);
 
   useEffect(() => {
-    if (stats.happiness === 0 && stats.energy === 0 && stats.hunger === 0 && stats.love === 0) {
+    if (stats.happiness === 0 && stats.energy === 0 && stats.hunger === 0 && stats.love === 0 && !showDeathAnimation && !isDead) {
       setShowDeathAnimation(true);
-      
-      setTimeout(() => {
-        setIsDead(true);
-        setShowDeathAnimation(false);
-      }, 15000);
       
       toast({
         title: "💀 Affogato Cookie погиб...",
         description: "Все характеристики достигли нуля",
         variant: "destructive"
       });
+      
+      setTimeout(() => {
+        setIsDead(true);
+        setShowDeathAnimation(false);
+      }, 15000);
     }
     
     // Предупреждения при низких характеристиках
