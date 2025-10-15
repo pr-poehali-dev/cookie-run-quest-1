@@ -20,6 +20,7 @@ export default function Index() {
   const [currentOutfit, setCurrentOutfit] = useState(0);
   const [animationEffect, setAnimationEffect] = useState<string | null>(null);
   const [isHurt, setIsHurt] = useState(false);
+  const [isHappy, setIsHappy] = useState(false);
 
   const outfits = [
     {
@@ -127,6 +128,7 @@ export default function Index() {
 
   const petCookie = () => {
     showEffect("pet");
+    setIsHappy(true);
     setStats(prev => ({
       ...prev,
       happiness: Math.min(100, prev.happiness + 20)
@@ -135,6 +137,7 @@ export default function Index() {
       title: "Мурр~ 💕",
       description: "Affogato Cookie обожает, когда его гладят!",
     });
+    setTimeout(() => setIsHappy(false), 3000);
   };
 
   const hitCookie = () => {
