@@ -19,6 +19,7 @@ export default function Index() {
   const [showWardrobe, setShowWardrobe] = useState(false);
   const [currentOutfit, setCurrentOutfit] = useState(0);
   const [animationEffect, setAnimationEffect] = useState<string | null>(null);
+  const [isHurt, setIsHurt] = useState(false);
 
   const outfits = [
     {
@@ -138,6 +139,7 @@ export default function Index() {
 
   const hitCookie = () => {
     showEffect("hit");
+    setIsHurt(true);
     setStats(prev => ({
       ...prev,
       happiness: Math.max(0, prev.happiness - 30),
@@ -148,6 +150,7 @@ export default function Index() {
       description: "Affogato Cookie очень расстроен...",
       variant: "destructive"
     });
+    setTimeout(() => setIsHurt(false), 3000);
   };
 
   const changeOutfit = (outfitId: number) => {
@@ -224,7 +227,7 @@ export default function Index() {
 
                 <div className={`relative mx-auto w-full max-w-md aspect-square rounded-3xl overflow-hidden border-8 border-white shadow-2xl ${isPlaying ? 'animate-bounce-slow' : 'animate-float'}`}>
                   <img
-                    src={outfits[currentOutfit].image}
+                    src={isHurt && currentOutfit === 0 ? "https://cdn.poehali.dev/files/5b7ebc9b-a617-436d-82ac-f23dd416b910.png" : outfits[currentOutfit].image}
                     alt="Affogato Cookie"
                     className="w-full h-full object-cover"
                   />
