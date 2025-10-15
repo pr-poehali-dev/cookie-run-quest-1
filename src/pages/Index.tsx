@@ -24,6 +24,7 @@ export default function Index() {
   const [isEating, setIsEating] = useState(false);
   const [isLilyPet, setIsLilyPet] = useState(false);
   const [ownedOutfits, setOwnedOutfits] = useState<number[]>([0]);
+  const [isDead, setIsDead] = useState(false);
 
   const outfits = [
     {
@@ -41,6 +42,8 @@ export default function Index() {
   ];
 
   useEffect(() => {
+    if (isDead) return;
+    
     const interval = setInterval(() => {
       setStats(prev => ({
         ...prev,
@@ -51,7 +54,18 @@ export default function Index() {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isDead]);
+
+  useEffect(() => {
+    if (stats.happiness === 0 && stats.energy === 0 && stats.hunger === 0) {
+      setIsDead(true);
+      toast({
+        title: "💀 Affogato Cookie погиб...",
+        description: "Все характеристики достигли нуля",
+        variant: "destructive"
+      });
+    }
+  }, [stats]);
 
   const showEffect = (effect: string) => {
     setAnimationEffect(effect);
@@ -199,6 +213,28 @@ export default function Index() {
     return "bg-red-500";
   };
 
+  const resetGame = () => {
+    setStats({
+      happiness: 75,
+      energy: 60,
+      hunger: 40,
+      level: 5
+    });
+    setCoins(100);
+    setCurrentOutfit(0);
+    setOwnedOutfits([0]);
+    setIsDead(false);
+    setIsPlaying(false);
+    setIsHurt(false);
+    setIsHappy(false);
+    setIsEating(false);
+    setIsLilyPet(false);
+    toast({
+      title: "🔄 Игра перезапущена!",
+      description: "Affogato Cookie вернулся к жизни!",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-100 via-yellow-50 to-purple-100">
       <div className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b-4 border-primary shadow-lg">
@@ -230,23 +266,33 @@ export default function Index() {
                 </div>
 
                 <div className={`relative mx-auto w-full max-w-md aspect-square rounded-3xl overflow-hidden border-8 border-white shadow-2xl ${isPlaying ? 'animate-bounce-slow' : 'animate-float'}`}>
-                  <img
-                    src={
-                      currentOutfit === 0 ? (
-                        isHurt 
-                          ? "https://cdn.poehali.dev/files/5b7ebc9b-a617-436d-82ac-f23dd416b910.png" 
-                          : isHappy 
-                          ? "https://cdn.poehali.dev/files/7c390821-37f8-4c81-982f-f0d25b707ae4.png"
-                          : isEating
-                          ? "https://cdn.poehali.dev/files/2c8c69c3-2e60-472d-8051-5cb717c7c514.jpg"
-                          : outfits[0].image
-                      ) : currentOutfit === 1 && isLilyPet
-                      ? "https://cdn.poehali.dev/files/8c3145a1-26c5-4cc8-bb50-26f633df1bbf.jpg"
-                      : outfits[currentOutfit].image
-                    }
-                    alt="Affogato Cookie"
-                    className="w-full h-full object-cover"
-                  />
+                  {isDead ? (
+                    <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
+                      <div className="text-center space-y-4 animate-pulse">
+                        <div className="text-9xl">🪦</div>
+                        <p className="text-white font-black text-2xl">R.I.P.</p>
+                        <p className="text-gray-400 font-bold text-lg">Affogato Cookie</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <img
+                      src={
+                        currentOutfit === 0 ? (
+                          isHurt 
+                            ? "https://cdn.poehali.dev/files/5b7ebc9b-a617-436d-82ac-f23dd416b910.png" 
+                            : isHappy 
+                            ? "https://cdn.poehali.dev/files/7c390821-37f8-4c81-982f-f0d25b707ae4.png"
+                            : isEating
+                            ? "https://cdn.poehali.dev/files/2c8c69c3-2e60-472d-8051-5cb717c7c514.jpg"
+                            : outfits[0].image
+                        ) : currentOutfit === 1 && isLilyPet
+                        ? "https://cdn.poehali.dev/files/8c3145a1-26c5-4cc8-bb50-26f633df1bbf.jpg"
+                        : outfits[currentOutfit].image
+                      }
+                      alt="Affogato Cookie"
+                      className="w-full h-full object-cover"
+                    />
+                  )}
                   {isPlaying && (
                     <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-secondary/30 flex items-center justify-center">
                       <span className="text-6xl animate-bounce">🎮</span>
@@ -317,56 +363,72 @@ export default function Index() {
                   Действия
                 </h3>
                 
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    onClick={feedCookie}
-                    className="bg-gradient-to-r from-primary to-secondary hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-foreground"
-                  >
-                    <Icon name="Cake" size={20} />
-                    Покормить
-                  </Button>
+                {isDead ? (
+                  <div className="flex flex-col items-center gap-6 py-8">
+                    <div className="text-center space-y-2">
+                      <p className="text-xl font-black text-red-600">💀 Персонаж погиб</p>
+                      <p className="text-sm text-foreground/70">Все характеристики достигли нуля...</p>
+                    </div>
+                    <Button
+                      onClick={resetGame}
+                      className="bg-gradient-to-r from-green-500 to-green-700 hover:scale-110 transition-all font-black text-xl py-8 px-12 rounded-2xl border-4 border-foreground/20 shadow-2xl text-white"
+                    >
+                      <Icon name="RotateCcw" size={24} />
+                      Начать заново
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button
+                      onClick={feedCookie}
+                      className="bg-gradient-to-r from-primary to-secondary hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-foreground"
+                    >
+                      <Icon name="Cake" size={20} />
+                      Покормить
+                    </Button>
 
-                  <Button
-                    onClick={playCookie}
-                    disabled={stats.energy < 20}
-                    className="bg-gradient-to-r from-secondary to-accent hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-foreground disabled:opacity-50"
-                  >
-                    <Icon name="Gamepad2" size={20} />
-                    Играть
-                  </Button>
+                    <Button
+                      onClick={playCookie}
+                      disabled={stats.energy < 20}
+                      className="bg-gradient-to-r from-secondary to-accent hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-foreground disabled:opacity-50"
+                    >
+                      <Icon name="Gamepad2" size={20} />
+                      Играть
+                    </Button>
 
-                  <Button
-                    onClick={restCookie}
-                    className="bg-gradient-to-r from-accent to-primary hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-white"
-                  >
-                    <Icon name="Moon" size={20} />
-                    Отдохнуть
-                  </Button>
+                    <Button
+                      onClick={restCookie}
+                      className="bg-gradient-to-r from-accent to-primary hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-white"
+                    >
+                      <Icon name="Moon" size={20} />
+                      Отдохнуть
+                    </Button>
 
-                  <Button
-                    onClick={petCookie}
-                    className="bg-gradient-to-r from-pink-400 to-pink-600 hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-white"
-                  >
-                    <Icon name="Heart" size={20} />
-                    Погладить
-                  </Button>
+                    <Button
+                      onClick={petCookie}
+                      className="bg-gradient-to-r from-pink-400 to-pink-600 hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-white"
+                    >
+                      <Icon name="Heart" size={20} />
+                      Погладить
+                    </Button>
 
-                  <Button
-                    onClick={hitCookie}
-                    className="bg-gradient-to-r from-red-500 to-red-700 hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-white"
-                  >
-                    <Icon name="Zap" size={20} />
-                    Ударить
-                  </Button>
+                    <Button
+                      onClick={hitCookie}
+                      className="bg-gradient-to-r from-red-500 to-red-700 hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-white"
+                    >
+                      <Icon name="Zap" size={20} />
+                      Ударить
+                    </Button>
 
-                  <Button
-                    onClick={() => setShowWardrobe(true)}
-                    className="bg-gradient-to-r from-purple-500 to-purple-700 hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-white"
-                  >
-                    <Icon name="Shirt" size={20} />
-                    Гардероб
-                  </Button>
-                </div>
+                    <Button
+                      onClick={() => setShowWardrobe(true)}
+                      className="bg-gradient-to-r from-purple-500 to-purple-700 hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-white"
+                    >
+                      <Icon name="Shirt" size={20} />
+                      Гардероб
+                    </Button>
+                  </div>
+                )}
               </Card>
 
               <Card className="p-6 border-4 border-accent/30 shadow-xl bg-gradient-to-br from-accent/5 to-white">
