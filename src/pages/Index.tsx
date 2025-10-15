@@ -23,18 +23,24 @@ export default function Index() {
   const outfits = [
     {
       id: 0,
+      name: "Оригинальный облик",
+      image: "https://cdn.poehali.dev/files/44cafd08-2350-4055-96a2-31af2762a139.png",
+      cost: 0
+    },
+    {
+      id: 1,
       name: "Классический наряд",
       image: "https://cdn.poehali.dev/projects/afdc2bb2-bccd-4e69-909f-fb181d7ea94c/files/1483b987-73b9-4cb2-a471-1f1e02e651b1.jpg",
       cost: 0
     },
     {
-      id: 1,
+      id: 2,
       name: "Королевский костюм",
       image: "https://cdn.poehali.dev/projects/afdc2bb2-bccd-4e69-909f-fb181d7ea94c/files/f0d89dcd-4617-4e9e-96d9-c184d8cea2aa.jpg",
       cost: 50
     },
     {
-      id: 2,
+      id: 3,
       name: "Современный стиль",
       image: "https://cdn.poehali.dev/projects/afdc2bb2-bccd-4e69-909f-fb181d7ea94c/files/8e03f8c0-3b3a-42bc-9257-a9dde9366659.jpg",
       cost: 30
