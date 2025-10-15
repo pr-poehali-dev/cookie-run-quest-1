@@ -47,13 +47,21 @@ export default function Index() {
     if (isDead) return;
     
     const interval = setInterval(() => {
-      setStats(prev => ({
-        ...prev,
-        hunger: Math.max(0, prev.hunger - 1.5),
-        energy: Math.max(0, prev.energy - 0.8),
-        happiness: Math.max(0, prev.happiness - 0.5),
-        love: Math.max(0, prev.love - 0.4)
-      }));
+      setStats(prev => {
+        // Проверяем сколько характеристик уже на нуле
+        const zeroCount = [prev.happiness, prev.energy, prev.hunger, prev.love].filter(v => v === 0).length;
+        
+        // Если 2 или больше характеристик на нуле - ускоряем падение в 3 раза
+        const multiplier = zeroCount >= 2 ? 3 : 1;
+        
+        return {
+          ...prev,
+          hunger: Math.max(0, prev.hunger - (1.5 * multiplier)),
+          energy: Math.max(0, prev.energy - (0.8 * multiplier)),
+          happiness: Math.max(0, prev.happiness - (0.5 * multiplier)),
+          love: Math.max(0, prev.love - (0.4 * multiplier))
+        };
+      });
     }, 4000);
 
     return () => clearInterval(interval);
@@ -76,6 +84,16 @@ export default function Index() {
     }
     
     // Предупреждения при низких характеристиках
+    const zeroCount = [stats.happiness, stats.energy, stats.hunger, stats.love].filter(v => v === 0).length;
+    
+    if (zeroCount >= 2 && !isDead) {
+      toast({
+        title: "🚨 КРИТИЧЕСКОЕ СОСТОЯНИЕ!",
+        description: "Две характеристики на нуле! Остальные падают быстрее!",
+        variant: "destructive"
+      });
+    }
+    
     if (stats.happiness <= 20 && stats.happiness > 0 && !isDead) {
       toast({
         title: "⚠️ Низкое счастье!",
