@@ -22,6 +22,7 @@ export default function Index() {
   const [isHurt, setIsHurt] = useState(false);
   const [isHappy, setIsHappy] = useState(false);
   const [isEating, setIsEating] = useState(false);
+  const [isLilyPet, setIsLilyPet] = useState(false);
   const [ownedOutfits, setOwnedOutfits] = useState<number[]>([0]);
 
   const outfits = [
@@ -120,7 +121,16 @@ export default function Index() {
 
   const petCookie = () => {
     showEffect("pet");
-    setIsHappy(true);
+    
+    // Для Affogato Lily используем специальную эмоцию
+    if (currentOutfit === 1) {
+      setIsLilyPet(true);
+      setTimeout(() => setIsLilyPet(false), 3000);
+    } else {
+      setIsHappy(true);
+      setTimeout(() => setIsHappy(false), 3000);
+    }
+    
     setStats(prev => ({
       ...prev,
       happiness: Math.min(100, prev.happiness + 20)
@@ -129,7 +139,6 @@ export default function Index() {
       title: "Мурр~ 💕",
       description: "Affogato Cookie обожает, когда его гладят!",
     });
-    setTimeout(() => setIsHappy(false), 3000);
   };
 
   const hitCookie = () => {
@@ -231,7 +240,9 @@ export default function Index() {
                           : isEating
                           ? "https://cdn.poehali.dev/files/2c8c69c3-2e60-472d-8051-5cb717c7c514.jpg"
                           : outfits[0].image
-                      ) : outfits[currentOutfit].image
+                      ) : currentOutfit === 1 && isLilyPet
+                      ? "https://cdn.poehali.dev/files/8c3145a1-26c5-4cc8-bb50-26f633df1bbf.jpg"
+                      : outfits[currentOutfit].image
                     }
                     alt="Affogato Cookie"
                     className="w-full h-full object-cover"
