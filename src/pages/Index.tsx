@@ -12,6 +12,7 @@ export default function Index() {
     happiness: 75,
     energy: 60,
     hunger: 40,
+    love: 50,
     level: 5
   });
   const [coins, setCoins] = useState(100);
@@ -49,7 +50,8 @@ export default function Index() {
         ...prev,
         hunger: Math.max(0, prev.hunger - 1.5),
         energy: Math.max(0, prev.energy - 0.8),
-        happiness: Math.max(0, prev.happiness - 0.5)
+        happiness: Math.max(0, prev.happiness - 0.5),
+        love: Math.max(0, prev.love - 0.4)
       }));
     }, 4000);
 
@@ -57,7 +59,7 @@ export default function Index() {
   }, [isDead]);
 
   useEffect(() => {
-    if (stats.happiness === 0 && stats.energy === 0 && stats.hunger === 0) {
+    if (stats.happiness === 0 && stats.energy === 0 && stats.hunger === 0 && stats.love === 0) {
       setIsDead(true);
       toast({
         title: "💀 Affogato Cookie погиб...",
@@ -85,6 +87,13 @@ export default function Index() {
       toast({
         title: "⚠️ Сильный голод!",
         description: "Affogato Cookie нужно покормить срочно!",
+        variant: "destructive"
+      });
+    }
+    if (stats.love <= 15 && stats.love > 0 && !isDead) {
+      toast({
+        title: "⚠️ Мало любви!",
+        description: "Affogato Cookie чувствует себя одиноко...",
         variant: "destructive"
       });
     }
@@ -170,11 +179,12 @@ export default function Index() {
     
     setStats(prev => ({
       ...prev,
-      happiness: Math.min(100, prev.happiness + 20)
+      happiness: Math.min(100, prev.happiness + 20),
+      love: Math.min(100, prev.love + 25)
     }));
     toast({
       title: "Мурр~ 💕",
-      description: "Affogato Cookie обожает, когда его гладят!",
+      description: "Affogato Cookie обожает, когда его гладят! +25 любви",
     });
   };
 
@@ -184,11 +194,12 @@ export default function Index() {
     setStats(prev => ({
       ...prev,
       happiness: Math.max(0, prev.happiness - 30),
-      energy: Math.max(0, prev.energy - 10)
+      energy: Math.max(0, prev.energy - 10),
+      love: Math.max(0, prev.love - 20)
     }));
     toast({
       title: "Ой! 😢",
-      description: "Affogato Cookie очень расстроен...",
+      description: "Affogato Cookie очень расстроен... -20 любви",
       variant: "destructive"
     });
     setTimeout(() => setIsHurt(false), 3000);
@@ -241,6 +252,7 @@ export default function Index() {
       happiness: 75,
       energy: 60,
       hunger: 40,
+      love: 50,
       level: 5
     });
     setCoins(100);
@@ -377,6 +389,16 @@ export default function Index() {
                     </div>
                     <Progress value={stats.hunger} className={`h-3 ${getStatusColor(stats.hunger)}`} />
                   </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-bold text-foreground flex items-center gap-2">
+                        💕 Любовь
+                      </span>
+                      <span className="font-black text-pink-500">{Math.round(stats.love)}%</span>
+                    </div>
+                    <Progress value={stats.love} className={`h-3 ${getStatusColor(stats.love)}`} />
+                  </div>
                 </div>
               </Card>
 
@@ -461,8 +483,8 @@ export default function Index() {
                 </h3>
                 <ul className="space-y-2 text-sm font-medium text-foreground/80">
                   <li className="flex items-start gap-2">
-                    <span className="text-primary">•</span>
-                    <span>Гладьте печеньку для повышения счастья</span>
+                    <span className="text-pink-500">•</span>
+                    <span>Гладьте печеньку для повышения любви</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-secondary">•</span>
@@ -470,7 +492,7 @@ export default function Index() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-accent">•</span>
-                    <span>Не бейте печеньку - это очень плохо!</span>
+                    <span>Не бейте печеньку - любовь падает!</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-purple-500">•</span>
