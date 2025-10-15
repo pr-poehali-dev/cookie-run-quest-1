@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Icon from "@/components/ui/icon";
 import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -15,6 +16,30 @@ export default function Index() {
   });
   const [coins, setCoins] = useState(100);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showWardrobe, setShowWardrobe] = useState(false);
+  const [currentOutfit, setCurrentOutfit] = useState(0);
+  const [animationEffect, setAnimationEffect] = useState<string | null>(null);
+
+  const outfits = [
+    {
+      id: 0,
+      name: "Классический наряд",
+      image: "https://cdn.poehali.dev/projects/afdc2bb2-bccd-4e69-909f-fb181d7ea94c/files/1483b987-73b9-4cb2-a471-1f1e02e651b1.jpg",
+      cost: 0
+    },
+    {
+      id: 1,
+      name: "Королевский костюм",
+      image: "https://cdn.poehali.dev/projects/afdc2bb2-bccd-4e69-909f-fb181d7ea94c/files/f0d89dcd-4617-4e9e-96d9-c184d8cea2aa.jpg",
+      cost: 50
+    },
+    {
+      id: 2,
+      name: "Современный стиль",
+      image: "https://cdn.poehali.dev/projects/afdc2bb2-bccd-4e69-909f-fb181d7ea94c/files/8e03f8c0-3b3a-42bc-9257-a9dde9366659.jpg",
+      cost: 30
+    }
+  ];
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -28,6 +53,11 @@ export default function Index() {
 
     return () => clearInterval(interval);
   }, []);
+
+  const showEffect = (effect: string) => {
+    setAnimationEffect(effect);
+    setTimeout(() => setAnimationEffect(null), 1500);
+  };
 
   const feedCookie = () => {
     if (coins >= 10) {
@@ -88,6 +118,62 @@ export default function Index() {
     });
   };
 
+  const petCookie = () => {
+    showEffect("pet");
+    setStats(prev => ({
+      ...prev,
+      happiness: Math.min(100, prev.happiness + 20)
+    }));
+    toast({
+      title: "Мурр~ 💕",
+      description: "Affogato Cookie обожает, когда его гладят!",
+    });
+  };
+
+  const hitCookie = () => {
+    showEffect("hit");
+    setStats(prev => ({
+      ...prev,
+      happiness: Math.max(0, prev.happiness - 30),
+      energy: Math.max(0, prev.energy - 10)
+    }));
+    toast({
+      title: "Ой! 😢",
+      description: "Affogato Cookie очень расстроен...",
+      variant: "destructive"
+    });
+  };
+
+  const changeOutfit = (outfitId: number) => {
+    const outfit = outfits.find(o => o.id === outfitId);
+    if (!outfit) return;
+
+    if (outfit.cost > 0 && coins < outfit.cost) {
+      toast({
+        title: "Недостаточно монет! 💰",
+        description: `Нужно ${outfit.cost} монет для покупки`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (outfit.cost > 0 && currentOutfit !== outfitId) {
+      setCoins(prev => prev - outfit.cost);
+    }
+
+    setCurrentOutfit(outfitId);
+    setShowWardrobe(false);
+    setStats(prev => ({
+      ...prev,
+      happiness: Math.min(100, prev.happiness + 10)
+    }));
+    
+    toast({
+      title: "Модно! ✨",
+      description: `Affogato Cookie надел ${outfit.name}!`,
+    });
+  };
+
   const getMoodEmoji = () => {
     if (stats.happiness > 70) return "😊";
     if (stats.happiness > 40) return "😐";
@@ -132,7 +218,7 @@ export default function Index() {
 
                 <div className={`relative mx-auto w-full max-w-md aspect-square rounded-3xl overflow-hidden border-8 border-white shadow-2xl ${isPlaying ? 'animate-bounce-slow' : 'animate-float'}`}>
                   <img
-                    src="https://cdn.poehali.dev/projects/afdc2bb2-bccd-4e69-909f-fb181d7ea94c/files/22e1ce64-ecd9-4e69-909f-fb181d7ea94c.jpg"
+                    src={outfits[currentOutfit].image}
                     alt="Affogato Cookie"
                     className="w-full h-full object-cover"
                   />
@@ -141,11 +227,21 @@ export default function Index() {
                       <span className="text-6xl animate-bounce">🎮</span>
                     </div>
                   )}
+                  {animationEffect === 'pet' && (
+                    <div className="absolute inset-0 bg-primary/20 flex items-center justify-center animate-fade-in">
+                      <span className="text-8xl animate-bounce">💕</span>
+                    </div>
+                  )}
+                  {animationEffect === 'hit' && (
+                    <div className="absolute inset-0 bg-red-500/30 flex items-center justify-center animate-fade-in">
+                      <span className="text-8xl animate-bounce">💢</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="mt-6 text-center">
                   <h2 className="text-3xl font-black mb-2">Affogato Cookie</h2>
-                  <p className="text-foreground/70 font-medium">Коварный советник с силой иллюзий</p>
+                  <p className="text-foreground/70 font-medium">{outfits[currentOutfit].name}</p>
                 </div>
               </div>
             </Card>
@@ -196,30 +292,54 @@ export default function Index() {
                   Действия
                 </h3>
                 
-                <div className="grid grid-cols-1 gap-3">
+                <div className="grid grid-cols-2 gap-3">
                   <Button
                     onClick={feedCookie}
-                    className="bg-gradient-to-r from-primary to-secondary hover:scale-105 transition-all font-bold text-lg py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-foreground"
+                    className="bg-gradient-to-r from-primary to-secondary hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-foreground"
                   >
-                    <Icon name="Cake" size={24} />
-                    Покормить (10 💰)
+                    <Icon name="Cake" size={20} />
+                    Покормить
                   </Button>
 
                   <Button
                     onClick={playCookie}
                     disabled={stats.energy < 20}
-                    className="bg-gradient-to-r from-secondary to-accent hover:scale-105 transition-all font-bold text-lg py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-foreground disabled:opacity-50"
+                    className="bg-gradient-to-r from-secondary to-accent hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-foreground disabled:opacity-50"
                   >
-                    <Icon name="Gamepad2" size={24} />
-                    Играть (+15 💰)
+                    <Icon name="Gamepad2" size={20} />
+                    Играть
                   </Button>
 
                   <Button
                     onClick={restCookie}
-                    className="bg-gradient-to-r from-accent to-primary hover:scale-105 transition-all font-bold text-lg py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-white"
+                    className="bg-gradient-to-r from-accent to-primary hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-white"
                   >
-                    <Icon name="Moon" size={24} />
+                    <Icon name="Moon" size={20} />
                     Отдохнуть
+                  </Button>
+
+                  <Button
+                    onClick={petCookie}
+                    className="bg-gradient-to-r from-pink-400 to-pink-600 hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-white"
+                  >
+                    <Icon name="Heart" size={20} />
+                    Погладить
+                  </Button>
+
+                  <Button
+                    onClick={hitCookie}
+                    className="bg-gradient-to-r from-red-500 to-red-700 hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-white"
+                  >
+                    <Icon name="Zap" size={20} />
+                    Ударить
+                  </Button>
+
+                  <Button
+                    onClick={() => setShowWardrobe(true)}
+                    className="bg-gradient-to-r from-purple-500 to-purple-700 hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-white"
+                  >
+                    <Icon name="Shirt" size={20} />
+                    Гардероб
                   </Button>
                 </div>
               </Card>
@@ -232,15 +352,19 @@ export default function Index() {
                 <ul className="space-y-2 text-sm font-medium text-foreground/80">
                   <li className="flex items-start gap-2">
                     <span className="text-primary">•</span>
-                    <span>Кормите печеньку, когда сытость падает ниже 30%</span>
+                    <span>Гладьте печеньку для повышения счастья</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-secondary">•</span>
-                    <span>Играйте, чтобы зарабатывать монеты и повышать счастье</span>
+                    <span>Играйте, чтобы зарабатывать монеты</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-accent">•</span>
-                    <span>Давайте отдыхать, когда энергия на нуле</span>
+                    <span>Не бейте печеньку - это очень плохо!</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-purple-500">•</span>
+                    <span>Покупайте новые наряды в гардеробе</span>
                   </li>
                 </ul>
               </Card>
@@ -248,6 +372,51 @@ export default function Index() {
           </div>
         </div>
       </section>
+
+      <Dialog open={showWardrobe} onOpenChange={setShowWardrobe}>
+        <DialogContent className="max-w-4xl border-4 border-primary/30">
+          <DialogHeader>
+            <DialogTitle className="text-3xl font-black text-center bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              👔 Гардероб Affogato Cookie
+            </DialogTitle>
+            <DialogDescription className="text-center text-foreground/70 font-medium">
+              Выбери стильный наряд для своей печеньки!
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid md:grid-cols-3 gap-4 p-4">
+            {outfits.map((outfit) => (
+              <Card
+                key={outfit.id}
+                className={`cursor-pointer transition-all hover:scale-105 border-4 ${
+                  currentOutfit === outfit.id ? 'border-primary shadow-2xl' : 'border-primary/20'
+                }`}
+                onClick={() => changeOutfit(outfit.id)}
+              >
+                <div className="aspect-square overflow-hidden rounded-t-xl">
+                  <img
+                    src={outfit.image}
+                    alt={outfit.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-4 text-center">
+                  <h4 className="font-black text-lg mb-2">{outfit.name}</h4>
+                  {outfit.cost > 0 ? (
+                    <div className="bg-gradient-to-r from-secondary to-primary px-4 py-2 rounded-full inline-block border-2 border-foreground/20">
+                      <span className="font-black">💰 {outfit.cost}</span>
+                    </div>
+                  ) : (
+                    <div className="bg-gradient-to-r from-green-400 to-green-600 px-4 py-2 rounded-full inline-block">
+                      <span className="font-black text-white">✓ Базовый</span>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <footer className="py-6 px-4 border-t-4 border-primary/30 bg-white/50">
         <div className="container mx-auto text-center">
