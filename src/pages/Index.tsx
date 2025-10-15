@@ -105,6 +105,15 @@ export default function Index() {
   };
 
   const feedCookie = () => {
+    if (stats.love <= 10) {
+      toast({
+        title: "Отказ! 💔",
+        description: "Affogato Cookie слишком обижен и отказывается есть...",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     if (coins >= 10) {
       setCoins(prev => prev - 10);
       setIsEating(true);
@@ -166,6 +175,15 @@ export default function Index() {
   };
 
   const petCookie = () => {
+    if (stats.love <= 10) {
+      toast({
+        title: "Отказ! 💔",
+        description: "Affogato Cookie отворачивается и не хочет общаться...",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     showEffect("pet");
     
     // Для Affogato Lily используем специальную эмоцию
@@ -426,7 +444,8 @@ export default function Index() {
                   <div className="grid grid-cols-2 gap-3">
                     <Button
                       onClick={feedCookie}
-                      className="bg-gradient-to-r from-primary to-secondary hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-foreground"
+                      disabled={stats.love <= 10}
+                      className="bg-gradient-to-r from-primary to-secondary hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-foreground disabled:opacity-50 disabled:grayscale"
                     >
                       <Icon name="Cake" size={20} />
                       Покормить
@@ -451,7 +470,8 @@ export default function Index() {
 
                     <Button
                       onClick={petCookie}
-                      className="bg-gradient-to-r from-pink-400 to-pink-600 hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-white"
+                      disabled={stats.love <= 10}
+                      className="bg-gradient-to-r from-pink-400 to-pink-600 hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-white disabled:opacity-50 disabled:grayscale"
                     >
                       <Icon name="Heart" size={20} />
                       Погладить
