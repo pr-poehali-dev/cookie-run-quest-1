@@ -26,6 +26,7 @@ export default function Index() {
   const [isLilyPet, setIsLilyPet] = useState(false);
   const [ownedOutfits, setOwnedOutfits] = useState<number[]>([0]);
   const [isDead, setIsDead] = useState(false);
+  const [showDeathAnimation, setShowDeathAnimation] = useState(false);
 
   const outfits = [
     {
@@ -60,7 +61,13 @@ export default function Index() {
 
   useEffect(() => {
     if (stats.happiness === 0 && stats.energy === 0 && stats.hunger === 0 && stats.love === 0) {
-      setIsDead(true);
+      setShowDeathAnimation(true);
+      
+      setTimeout(() => {
+        setIsDead(true);
+        setShowDeathAnimation(false);
+      }, 15000);
+      
       toast({
         title: "💀 Affogato Cookie погиб...",
         description: "Все характеристики достигли нуля",
@@ -277,6 +284,7 @@ export default function Index() {
     setCurrentOutfit(0);
     setOwnedOutfits([0]);
     setIsDead(false);
+    setShowDeathAnimation(false);
     setIsPlaying(false);
     setIsHurt(false);
     setIsHappy(false);
@@ -319,7 +327,21 @@ export default function Index() {
                 </div>
 
                 <div className={`relative mx-auto w-full max-w-md aspect-square rounded-3xl overflow-hidden border-8 border-white shadow-2xl ${isPlaying ? 'animate-bounce-slow' : 'animate-float'}`}>
-                  {isDead ? (
+                  {showDeathAnimation ? (
+                    <div className="w-full h-full relative">
+                      <img
+                        src="https://cdn.poehali.dev/projects/afdc2bb2-bccd-4e69-909f-fb181d7ea94c/files/bf928157-988b-457e-8a6d-b62cb192d785.jpg"
+                        alt="Надгробие"
+                        className="w-full h-full object-cover animate-fade-in"
+                      />
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                        <div className="text-center space-y-4">
+                          <p className="text-white font-black text-3xl drop-shadow-2xl animate-pulse">💀</p>
+                          <p className="text-white font-black text-xl drop-shadow-2xl">Affogato Cookie...</p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : isDead ? (
                     <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
                       <div className="text-center space-y-4 animate-pulse">
                         <div className="text-9xl">🪦</div>
@@ -426,7 +448,15 @@ export default function Index() {
                   Действия
                 </h3>
                 
-                {isDead ? (
+                {showDeathAnimation ? (
+                  <div className="flex flex-col items-center gap-6 py-8">
+                    <div className="text-center space-y-2 animate-pulse">
+                      <div className="text-6xl mb-4">⏳</div>
+                      <p className="text-xl font-black text-gray-600">Прощание с Affogato Cookie...</p>
+                      <p className="text-sm text-foreground/70">Анимация прощания...</p>
+                    </div>
+                  </div>
+                ) : isDead ? (
                   <div className="flex flex-col items-center gap-6 py-8">
                     <div className="text-center space-y-2">
                       <p className="text-xl font-black text-red-600">💀 Персонаж погиб</p>
