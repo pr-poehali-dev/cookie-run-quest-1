@@ -47,11 +47,11 @@ export default function Index() {
     const interval = setInterval(() => {
       setStats(prev => ({
         ...prev,
-        hunger: Math.max(0, prev.hunger - 1),
-        energy: Math.max(0, prev.energy - 0.5),
-        happiness: Math.max(0, prev.happiness - 0.3)
+        hunger: Math.max(0, prev.hunger - 1.5),
+        energy: Math.max(0, prev.energy - 0.8),
+        happiness: Math.max(0, prev.happiness - 0.5)
       }));
-    }, 5000);
+    }, 4000);
 
     return () => clearInterval(interval);
   }, [isDead]);
@@ -65,7 +65,30 @@ export default function Index() {
         variant: "destructive"
       });
     }
-  }, [stats]);
+    
+    // Предупреждения при низких характеристиках
+    if (stats.happiness <= 20 && stats.happiness > 0 && !isDead) {
+      toast({
+        title: "⚠️ Низкое счастье!",
+        description: "Affogato Cookie грустит...",
+        variant: "destructive"
+      });
+    }
+    if (stats.energy <= 15 && stats.energy > 0 && !isDead) {
+      toast({
+        title: "⚠️ Критически мало энергии!",
+        description: "Affogato Cookie очень устал...",
+        variant: "destructive"
+      });
+    }
+    if (stats.hunger <= 10 && stats.hunger > 0 && !isDead) {
+      toast({
+        title: "⚠️ Сильный голод!",
+        description: "Affogato Cookie нужно покормить срочно!",
+        variant: "destructive"
+      });
+    }
+  }, [stats, isDead]);
 
   const showEffect = (effect: string) => {
     setAnimationEffect(effect);
