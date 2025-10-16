@@ -31,6 +31,9 @@ export default function Index() {
   const [isSick, setIsSick] = useState(false);
   const [isWashing, setIsWashing] = useState(false);
   const [isKissing, setIsKissing] = useState(false);
+  const [isSuper, setIsSuper] = useState(false);
+  const [isDancing, setIsDancing] = useState(false);
+  const [isMeditating, setIsMeditating] = useState(false);
 
   const outfits = [
     {
@@ -337,6 +340,77 @@ export default function Index() {
     setTimeout(() => setIsKissing(false), 3000);
   };
 
+  const superModeCookie = () => {
+    setIsSuper(true);
+    showEffect("super");
+    
+    setStats(prev => ({
+      ...prev,
+      happiness: 100,
+      energy: 100,
+      hunger: 100,
+      love: 100,
+      hygiene: 100
+    }));
+    
+    setCoins(prev => prev + 100);
+    setIsSick(false);
+    
+    toast({
+      title: "⚡ СУПЕР РЕЖИМ!",
+      description: "Все характеристики максимальны! +100 монет!",
+    });
+    
+    setTimeout(() => setIsSuper(false), 5000);
+  };
+
+  const danceCookie = () => {
+    setIsDancing(true);
+    showEffect("dance");
+    
+    setStats(prev => ({
+      ...prev,
+      happiness: Math.min(100, prev.happiness + 30),
+      energy: Math.max(0, prev.energy - 15)
+    }));
+    
+    setCoins(prev => prev + 25);
+    
+    toast({
+      title: "💃 Танцевальная вечеринка!",
+      description: "Affogato Cookie танцует от счастья! +25 монет!",
+    });
+    
+    setTimeout(() => setIsDancing(false), 3000);
+  };
+
+  const meditateCookie = () => {
+    setIsMeditating(true);
+    showEffect("meditate");
+    
+    setStats(prev => ({
+      ...prev,
+      happiness: Math.min(100, prev.happiness + 20),
+      energy: Math.min(100, prev.energy + 30),
+      love: Math.min(100, prev.love + 15)
+    }));
+    
+    if (isSick) {
+      setIsSick(false);
+      toast({
+        title: "🧘 Исцеляющая медитация!",
+        description: "Affogato Cookie достиг просветления и выздоровел!",
+      });
+    } else {
+      toast({
+        title: "🧘 Внутренний покой...",
+        description: "Affogato Cookie нашёл гармонию!",
+      });
+    }
+    
+    setTimeout(() => setIsMeditating(false), 3000);
+  };
+
   const changeOutfit = (outfitId: number) => {
     const outfit = outfits.find(o => o.id === outfitId);
     if (!outfit) return;
@@ -512,14 +586,71 @@ export default function Index() {
                       <span className="text-8xl animate-ping">💖</span>
                     </div>
                   )}
-                  {isSick && !isWashing && (
+                  {isSuper && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/40 via-orange-500/40 to-red-500/40 flex items-center justify-center animate-fade-in">
+                      <div className="text-center space-y-4">
+                        <span className="text-9xl animate-bounce">⚡</span>
+                        <span className="text-6xl block animate-spin-slow">✨</span>
+                      </div>
+                    </div>
+                  )}
+                  {isDancing && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500/30 via-pink-500/30 to-purple-500/30 flex items-center justify-center animate-fade-in">
+                      <div className="text-center space-y-2">
+                        <span className="text-9xl animate-bounce">💃</span>
+                        <div className="flex gap-4 text-5xl">
+                          <span className="animate-bounce delay-100">🎵</span>
+                          <span className="animate-bounce delay-200">🎶</span>
+                          <span className="animate-bounce delay-300">🎵</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {isMeditating && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-teal-500/30 via-cyan-500/30 to-teal-500/30 flex items-center justify-center animate-fade-in">
+                      <div className="text-center space-y-4">
+                        <span className="text-9xl">🧘</span>
+                        <div className="flex gap-2 text-4xl justify-center">
+                          <span className="animate-pulse">✨</span>
+                          <span className="animate-pulse delay-100">✨</span>
+                          <span className="animate-pulse delay-200">✨</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {animationEffect === 'super' && !isSuper && (
+                    <div className="absolute inset-0 flex items-center justify-center animate-fade-in pointer-events-none">
+                      <span className="text-9xl animate-ping">⚡</span>
+                    </div>
+                  )}
+                  {animationEffect === 'dance' && !isDancing && (
+                    <div className="absolute inset-0 flex items-center justify-center animate-fade-in pointer-events-none">
+                      <span className="text-9xl animate-spin">💫</span>
+                    </div>
+                  )}
+                  {animationEffect === 'meditate' && !isMeditating && (
+                    <div className="absolute inset-0 flex items-center justify-center animate-fade-in pointer-events-none">
+                      <span className="text-9xl animate-pulse">🌟</span>
+                    </div>
+                  )}
+                  {isSick && !isWashing && !isMeditating && (
                     <div className="absolute top-4 right-4 bg-red-500/80 rounded-full p-3 animate-pulse">
                       <span className="text-4xl">🤒</span>
                     </div>
                   )}
-                  {stats.love === 100 && !isKissing && (
+                  {stats.love === 100 && !isKissing && !isSuper && (
                     <div className="absolute top-4 left-4 bg-pink-500/80 rounded-full p-3 animate-pulse">
                       <span className="text-4xl">💕</span>
+                    </div>
+                  )}
+                  {stats.happiness === 100 && stats.energy === 100 && stats.hunger === 100 && stats.love === 100 && stats.hygiene === 100 && !isSuper && (
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full px-4 py-2 animate-pulse shadow-2xl">
+                      <span className="text-2xl font-black text-white">⚡ ИДЕАЛ ⚡</span>
+                    </div>
+                  )}
+                  {stats.happiness === 100 && stats.energy === 100 && !isDancing && !isSuper && stats.love !== 100 && (
+                    <div className="absolute top-4 right-4 bg-purple-500/80 rounded-full p-3 animate-pulse">
+                      <span className="text-4xl">💃</span>
                     </div>
                   )}
                 </div>
@@ -672,6 +803,14 @@ export default function Index() {
                         <Icon name="HeartHandshake" size={20} />
                         💋 Поцеловать
                       </Button>
+                    ) : stats.happiness === 100 && stats.energy === 100 ? (
+                      <Button
+                        onClick={danceCookie}
+                        className="bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 hover:scale-110 transition-all font-bold text-base py-6 rounded-xl border-4 border-purple-400 shadow-2xl text-white animate-pulse"
+                      >
+                        <Icon name="Sparkles" size={20} />
+                        💃 Танцевать
+                      </Button>
                     ) : (
                       <Button
                         onClick={washCookie}
@@ -682,13 +821,31 @@ export default function Index() {
                       </Button>
                     )}
 
-                    <Button
-                      onClick={hitCookie}
-                      className="bg-gradient-to-r from-red-500 to-red-700 hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-white"
-                    >
-                      <Icon name="Zap" size={20} />
-                      Ударить
-                    </Button>
+                    {stats.happiness === 100 && stats.energy === 100 && stats.hunger === 100 && stats.love === 100 && stats.hygiene === 100 ? (
+                      <Button
+                        onClick={superModeCookie}
+                        className="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 hover:scale-110 transition-all font-bold text-base py-6 rounded-xl border-4 border-yellow-300 shadow-2xl text-white animate-pulse"
+                      >
+                        <Icon name="Zap" size={20} />
+                        ⚡ СУПЕР!
+                      </Button>
+                    ) : isSick && stats.energy > 50 ? (
+                      <Button
+                        onClick={meditateCookie}
+                        className="bg-gradient-to-r from-teal-400 to-cyan-600 hover:scale-110 transition-all font-bold text-base py-6 rounded-xl border-4 border-teal-300 shadow-2xl text-white animate-pulse"
+                      >
+                        <Icon name="Eye" size={20} />
+                        🧘 Медитация
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={hitCookie}
+                        className="bg-gradient-to-r from-red-500 to-red-700 hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-white"
+                      >
+                        <Icon name="Zap" size={20} />
+                        Ударить
+                      </Button>
+                    )}
 
                     <Button
                       onClick={() => setShowWardrobe(true)}
