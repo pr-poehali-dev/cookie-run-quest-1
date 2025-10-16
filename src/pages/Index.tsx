@@ -58,22 +58,22 @@ export default function Index() {
         // Проверяем сколько характеристик уже на нуле
         const zeroCount = [prev.happiness, prev.energy, prev.hunger, prev.love].filter(v => v === 0).length;
         
-        // Если 2 или больше характеристик на нуле - ускоряем падение в 3 раза
-        const multiplier = zeroCount >= 2 ? 3 : 1;
+        // Если 2 или больше характеристик на нуле - ускоряем падение в 2 раза
+        const multiplier = zeroCount >= 2 ? 2 : 1;
         
-        // Если болен - все падает в 2 раза быстрее
-        const sickMultiplier = isSick ? 2 : 1;
+        // Если болен - все падает в 1.5 раза быстрее
+        const sickMultiplier = isSick ? 1.5 : 1;
         
         return {
           ...prev,
-          hunger: Math.max(0, prev.hunger - (1.5 * multiplier * sickMultiplier)),
-          energy: Math.max(0, prev.energy - (0.8 * multiplier * sickMultiplier)),
-          happiness: Math.max(0, prev.happiness - (0.5 * multiplier * sickMultiplier)),
-          love: Math.max(0, prev.love - (0.4 * multiplier * sickMultiplier)),
-          hygiene: Math.max(0, prev.hygiene - 1.2)
+          hunger: Math.max(0, prev.hunger - (0.8 * multiplier * sickMultiplier)),
+          energy: Math.max(0, prev.energy - (0.5 * multiplier * sickMultiplier)),
+          happiness: Math.max(0, prev.happiness - (0.3 * multiplier * sickMultiplier)),
+          love: Math.max(0, prev.love - (0.25 * multiplier * sickMultiplier)),
+          hygiene: Math.max(0, prev.hygiene - 0.6)
         };
       });
-    }, 4000);
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [isDead, showDeathAnimation, isSick]);
