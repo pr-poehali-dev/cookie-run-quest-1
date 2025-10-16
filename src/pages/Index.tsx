@@ -34,6 +34,13 @@ export default function Index() {
   const [isSuper, setIsSuper] = useState(false);
   const [isDancing, setIsDancing] = useState(false);
   const [isMeditating, setIsMeditating] = useState(false);
+  const [achievements, setAchievements] = useState({
+    kissUnlocked: false,
+    danceUnlocked: false,
+    meditateUnlocked: false,
+    superUnlocked: false
+  });
+  const [showAchievements, setShowAchievements] = useState(false);
 
   const outfits = [
     {
@@ -324,6 +331,14 @@ export default function Index() {
     setIsKissing(true);
     showEffect("kiss");
     
+    if (!achievements.kissUnlocked) {
+      setAchievements(prev => ({ ...prev, kissUnlocked: true }));
+      toast({
+        title: "🏆 Достижение разблокировано!",
+        description: "💋 Первый поцелуй - Вы открыли секретное действие!",
+      });
+    }
+    
     setStats(prev => ({
       ...prev,
       happiness: 100,
@@ -343,6 +358,14 @@ export default function Index() {
   const superModeCookie = () => {
     setIsSuper(true);
     showEffect("super");
+    
+    if (!achievements.superUnlocked) {
+      setAchievements(prev => ({ ...prev, superUnlocked: true }));
+      toast({
+        title: "🏆 Легендарное достижение!",
+        description: "⚡ Идеальный баланс - Все характеристики достигли 100%!",
+      });
+    }
     
     setStats(prev => ({
       ...prev,
@@ -368,6 +391,14 @@ export default function Index() {
     setIsDancing(true);
     showEffect("dance");
     
+    if (!achievements.danceUnlocked) {
+      setAchievements(prev => ({ ...prev, danceUnlocked: true }));
+      toast({
+        title: "🏆 Достижение разблокировано!",
+        description: "💃 Танцор души - Счастье и энергия на пике!",
+      });
+    }
+    
     setStats(prev => ({
       ...prev,
       happiness: Math.min(100, prev.happiness + 30),
@@ -387,6 +418,14 @@ export default function Index() {
   const meditateCookie = () => {
     setIsMeditating(true);
     showEffect("meditate");
+    
+    if (!achievements.meditateUnlocked) {
+      setAchievements(prev => ({ ...prev, meditateUnlocked: true }));
+      toast({
+        title: "🏆 Достижение разблокировано!",
+        description: "🧘 Целитель - Исцеление через медитацию!",
+      });
+    }
     
     setStats(prev => ({
       ...prev,
@@ -487,6 +526,18 @@ export default function Index() {
             🍪 Affogato Cookie
           </h1>
           <div className="flex items-center gap-4">
+            <Button
+              onClick={() => setShowAchievements(true)}
+              className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:scale-105 transition-all px-4 py-2 rounded-full border-4 border-foreground/20 shadow-lg relative"
+            >
+              <Icon name="Trophy" size={20} className="text-white" />
+              <span className="font-black text-white text-base ml-1">
+                {Object.values(achievements).filter(Boolean).length}/4
+              </span>
+              {Object.values(achievements).filter(Boolean).length === 4 && (
+                <span className="absolute -top-1 -right-1 text-2xl animate-bounce">✨</span>
+              )}
+            </Button>
             <div className="bg-gradient-to-r from-secondary to-primary px-4 py-2 rounded-full border-4 border-foreground/20 shadow-lg">
               <span className="font-black text-foreground text-xl">💰 {coins}</span>
             </div>
@@ -932,6 +983,107 @@ export default function Index() {
                 </div>
               </Card>
             ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showAchievements} onOpenChange={setShowAchievements}>
+        <DialogContent className="max-w-2xl border-4 border-yellow-400/50 bg-gradient-to-br from-yellow-50 to-orange-50">
+          <DialogHeader>
+            <DialogTitle className="text-3xl font-black text-center bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent">
+              🏆 Секретные достижения
+            </DialogTitle>
+            <DialogDescription className="text-center text-foreground/70 font-medium">
+              Открой все секретные действия!
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 p-4">
+            <Card className={`p-6 border-4 transition-all ${achievements.kissUnlocked ? 'border-pink-400 bg-pink-50' : 'border-gray-300 bg-gray-100 grayscale'}`}>
+              <div className="flex items-center gap-4">
+                <div className={`text-6xl ${achievements.kissUnlocked ? 'animate-bounce' : 'opacity-30'}`}>💋</div>
+                <div className="flex-1">
+                  <h4 className="font-black text-xl mb-1">Первый поцелуй</h4>
+                  <p className="text-sm text-foreground/70 mb-2">Достигни любви 100% и поцелуй Affogato Cookie</p>
+                  {achievements.kissUnlocked ? (
+                    <div className="bg-green-500 text-white px-3 py-1 rounded-full inline-block text-xs font-bold">
+                      ✓ РАЗБЛОКИРОВАНО
+                    </div>
+                  ) : (
+                    <div className="bg-gray-400 text-white px-3 py-1 rounded-full inline-block text-xs font-bold">
+                      🔒 ЗАБЛОКИРОВАНО
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Card>
+
+            <Card className={`p-6 border-4 transition-all ${achievements.danceUnlocked ? 'border-purple-400 bg-purple-50' : 'border-gray-300 bg-gray-100 grayscale'}`}>
+              <div className="flex items-center gap-4">
+                <div className={`text-6xl ${achievements.danceUnlocked ? 'animate-bounce' : 'opacity-30'}`}>💃</div>
+                <div className="flex-1">
+                  <h4 className="font-black text-xl mb-1">Танцор души</h4>
+                  <p className="text-sm text-foreground/70 mb-2">Достигни счастья 100% и энергии 100%</p>
+                  {achievements.danceUnlocked ? (
+                    <div className="bg-green-500 text-white px-3 py-1 rounded-full inline-block text-xs font-bold">
+                      ✓ РАЗБЛОКИРОВАНО
+                    </div>
+                  ) : (
+                    <div className="bg-gray-400 text-white px-3 py-1 rounded-full inline-block text-xs font-bold">
+                      🔒 ЗАБЛОКИРОВАНО
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Card>
+
+            <Card className={`p-6 border-4 transition-all ${achievements.meditateUnlocked ? 'border-teal-400 bg-teal-50' : 'border-gray-300 bg-gray-100 grayscale'}`}>
+              <div className="flex items-center gap-4">
+                <div className={`text-6xl ${achievements.meditateUnlocked ? 'animate-pulse' : 'opacity-30'}`}>🧘</div>
+                <div className="flex-1">
+                  <h4 className="font-black text-xl mb-1">Целитель</h4>
+                  <p className="text-sm text-foreground/70 mb-2">Исцели болезнь через медитацию при энергии {'>'} 50%</p>
+                  {achievements.meditateUnlocked ? (
+                    <div className="bg-green-500 text-white px-3 py-1 rounded-full inline-block text-xs font-bold">
+                      ✓ РАЗБЛОКИРОВАНО
+                    </div>
+                  ) : (
+                    <div className="bg-gray-400 text-white px-3 py-1 rounded-full inline-block text-xs font-bold">
+                      🔒 ЗАБЛОКИРОВАНО
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Card>
+
+            <Card className={`p-6 border-4 transition-all ${achievements.superUnlocked ? 'border-orange-400 bg-orange-50' : 'border-gray-300 bg-gray-100 grayscale'}`}>
+              <div className="flex items-center gap-4">
+                <div className={`text-6xl ${achievements.superUnlocked ? 'animate-spin-slow' : 'opacity-30'}`}>⚡</div>
+                <div className="flex-1">
+                  <h4 className="font-black text-xl mb-1">Идеальный баланс</h4>
+                  <p className="text-sm text-foreground/70 mb-2">Достигни всех характеристик 100% одновременно</p>
+                  {achievements.superUnlocked ? (
+                    <div className="bg-green-500 text-white px-3 py-1 rounded-full inline-block text-xs font-bold">
+                      ✓ РАЗБЛОКИРОВАНО
+                    </div>
+                  ) : (
+                    <div className="bg-gray-400 text-white px-3 py-1 rounded-full inline-block text-xs font-bold">
+                      🔒 ЗАБЛОКИРОВАНО
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Card>
+
+            {Object.values(achievements).filter(Boolean).length === 4 && (
+              <Card className="p-6 border-4 border-yellow-400 bg-gradient-to-r from-yellow-100 to-orange-100 animate-pulse">
+                <div className="text-center space-y-3">
+                  <div className="text-7xl">🎉</div>
+                  <h4 className="font-black text-2xl text-orange-600">МАСТЕР УХОДА!</h4>
+                  <p className="text-foreground/70 font-medium">Ты открыл все секретные действия!</p>
+                </div>
+              </Card>
+            )}
           </div>
         </DialogContent>
       </Dialog>
