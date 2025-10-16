@@ -13,6 +13,7 @@ export default function Index() {
     energy: 60,
     hunger: 40,
     love: 50,
+    hygiene: 80,
     level: 5
   });
   const [coins, setCoins] = useState(100);
@@ -27,6 +28,8 @@ export default function Index() {
   const [ownedOutfits, setOwnedOutfits] = useState<number[]>([0]);
   const [isDead, setIsDead] = useState(false);
   const [showDeathAnimation, setShowDeathAnimation] = useState(false);
+  const [isSick, setIsSick] = useState(false);
+  const [isWashing, setIsWashing] = useState(false);
 
   const outfits = [
     {
@@ -54,18 +57,42 @@ export default function Index() {
         // Если 2 или больше характеристик на нуле - ускоряем падение в 3 раза
         const multiplier = zeroCount >= 2 ? 3 : 1;
         
+        // Если болен - все падает в 2 раза быстрее
+        const sickMultiplier = isSick ? 2 : 1;
+        
         return {
           ...prev,
-          hunger: Math.max(0, prev.hunger - (1.5 * multiplier)),
-          energy: Math.max(0, prev.energy - (0.8 * multiplier)),
-          happiness: Math.max(0, prev.happiness - (0.5 * multiplier)),
-          love: Math.max(0, prev.love - (0.4 * multiplier))
+          hunger: Math.max(0, prev.hunger - (1.5 * multiplier * sickMultiplier)),
+          energy: Math.max(0, prev.energy - (0.8 * multiplier * sickMultiplier)),
+          happiness: Math.max(0, prev.happiness - (0.5 * multiplier * sickMultiplier)),
+          love: Math.max(0, prev.love - (0.4 * multiplier * sickMultiplier)),
+          hygiene: Math.max(0, prev.hygiene - 1.2)
         };
       });
     }, 4000);
 
     return () => clearInterval(interval);
-  }, [isDead, showDeathAnimation]);
+  }, [isDead, showDeathAnimation, isSick]);
+
+  useEffect(() => {
+    if (stats.hygiene <= 30 && stats.hygiene > 0 && !isSick && !isDead) {
+      const sickChance = Math.random();
+      if (sickChance > 0.7) {
+        setIsSick(true);
+        toast({
+          title: "🤒 Affogato Cookie заболел!",
+          description: "Низкая гигиена привела к болезни. Все характеристики падают быстрее!",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "⚠️ Низкая гигиена!",
+          description: "Срочно помой Affogato Cookie, иначе он заболеет!",
+          variant: "destructive"
+        });
+      }
+    }
+  }, [stats.hygiene, isSick, isDead]);
 
   useEffect(() => {
     if (stats.happiness === 0 && stats.energy === 0 && stats.hunger === 0 && stats.love === 0 && !showDeathAnimation && !isDead) {
@@ -248,6 +275,47 @@ export default function Index() {
     setTimeout(() => setIsHurt(false), 3000);
   };
 
+  const washCookie = () => {
+    if (coins >= 15) {
+      setCoins(prev => prev - 15);
+      setIsWashing(true);
+      setStats(prev => ({
+        ...prev,
+        hygiene: Math.min(100, prev.hygiene + 40),
+        happiness: Math.min(100, prev.happiness + 5)
+      }));
+      
+      if (isSick) {
+        const healChance = Math.random();
+        if (healChance > 0.5) {
+          setIsSick(false);
+          toast({
+            title: "✨ Выздоровел!",
+            description: "Affogato Cookie чистый и здоровый!",
+          });
+        } else {
+          toast({
+            title: "🧼 Чистота!",
+            description: "Affogato Cookie чистый, но все еще болеет...",
+          });
+        }
+      } else {
+        toast({
+          title: "🧼 Блестит от чистоты!",
+          description: "Affogato Cookie теперь чистый и довольный!",
+        });
+      }
+      
+      setTimeout(() => setIsWashing(false), 3000);
+    } else {
+      toast({
+        title: "Недостаточно монет! 💰",
+        description: "Нужно 15 монет для купания",
+        variant: "destructive"
+      });
+    }
+  };
+
   const changeOutfit = (outfitId: number) => {
     const outfit = outfits.find(o => o.id === outfitId);
     if (!outfit) return;
@@ -296,9 +364,11 @@ export default function Index() {
       energy: 60,
       hunger: 40,
       love: 50,
+      hygiene: 80,
       level: 5
     });
     setCoins(100);
+    setIsSick(false);
     setCurrentOutfit(0);
     setOwnedOutfits([0]);
     setIsDead(false);
@@ -377,13 +447,15 @@ export default function Index() {
                             ? "https://cdn.poehali.dev/files/7c390821-37f8-4c81-982f-f0d25b707ae4.png"
                             : isEating
                             ? "https://cdn.poehali.dev/files/2c8c69c3-2e60-472d-8051-5cb717c7c514.jpg"
+                            : isSick
+                            ? "https://cdn.poehali.dev/files/5b7ebc9b-a617-436d-82ac-f23dd416b910.png"
                             : outfits[0].image
                         ) : currentOutfit === 1 && isLilyPet
                         ? "https://cdn.poehali.dev/files/8c3145a1-26c5-4cc8-bb50-26f633df1bbf.jpg"
                         : outfits[currentOutfit].image
                       }
                       alt="Affogato Cookie"
-                      className="w-full h-full object-cover"
+                      className={`w-full h-full object-cover ${isSick ? 'filter brightness-75 saturate-50' : ''}`}
                     />
                   )}
                   {isPlaying && (
@@ -399,6 +471,16 @@ export default function Index() {
                   {animationEffect === 'hit' && (
                     <div className="absolute inset-0 bg-red-500/30 flex items-center justify-center animate-fade-in">
                       <span className="text-8xl animate-bounce">💢</span>
+                    </div>
+                  )}
+                  {isWashing && (
+                    <div className="absolute inset-0 bg-blue-500/30 flex items-center justify-center animate-fade-in">
+                      <span className="text-8xl animate-bounce">🧼💧</span>
+                    </div>
+                  )}
+                  {isSick && !isWashing && (
+                    <div className="absolute top-4 right-4 bg-red-500/80 rounded-full p-3 animate-pulse">
+                      <span className="text-4xl">🤒</span>
                     </div>
                   )}
                 </div>
@@ -457,6 +539,24 @@ export default function Index() {
                     </div>
                     <Progress value={stats.love} className={`h-3 ${getStatusColor(stats.love)}`} />
                   </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-bold text-foreground flex items-center gap-2">
+                        🧼 Гигиена
+                      </span>
+                      <span className="font-black text-blue-500">{Math.round(stats.hygiene)}%</span>
+                    </div>
+                    <Progress value={stats.hygiene} className={`h-3 ${getStatusColor(stats.hygiene)}`} />
+                  </div>
+                  
+                  {isSick && (
+                    <div className="bg-red-100 border-2 border-red-500 rounded-lg p-3 animate-pulse">
+                      <p className="font-bold text-red-700 flex items-center gap-2">
+                        🤒 Болен! Все характеристики падают в 2 раза быстрее
+                      </p>
+                    </div>
+                  )}
                 </div>
               </Card>
 
@@ -526,6 +626,14 @@ export default function Index() {
                     </Button>
 
                     <Button
+                      onClick={washCookie}
+                      className="bg-gradient-to-r from-blue-400 to-blue-600 hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-white"
+                    >
+                      <Icon name="Droplets" size={20} />
+                      Помыть
+                    </Button>
+
+                    <Button
                       onClick={hitCookie}
                       className="bg-gradient-to-r from-red-500 to-red-700 hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-white"
                     >
@@ -535,7 +643,7 @@ export default function Index() {
 
                     <Button
                       onClick={() => setShowWardrobe(true)}
-                      className="bg-gradient-to-r from-purple-500 to-purple-700 hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-white"
+                      className="col-span-2 bg-gradient-to-r from-purple-500 to-purple-700 hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-white"
                     >
                       <Icon name="Shirt" size={20} />
                       Гардероб
