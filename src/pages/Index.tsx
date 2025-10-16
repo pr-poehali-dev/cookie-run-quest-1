@@ -30,6 +30,7 @@ export default function Index() {
   const [showDeathAnimation, setShowDeathAnimation] = useState(false);
   const [isSick, setIsSick] = useState(false);
   const [isWashing, setIsWashing] = useState(false);
+  const [isKissing, setIsKissing] = useState(false);
 
   const outfits = [
     {
@@ -316,6 +317,26 @@ export default function Index() {
     }
   };
 
+  const kissCookie = () => {
+    setIsKissing(true);
+    showEffect("kiss");
+    
+    setStats(prev => ({
+      ...prev,
+      happiness: 100,
+      love: 100
+    }));
+    
+    setCoins(prev => prev + 50);
+    
+    toast({
+      title: "💋 Волшебный поцелуй!",
+      description: "Affogato Cookie влюблён без памяти! +50 монет бонусом!",
+    });
+    
+    setTimeout(() => setIsKissing(false), 3000);
+  };
+
   const changeOutfit = (outfitId: number) => {
     const outfit = outfits.find(o => o.id === outfitId);
     if (!outfit) return;
@@ -478,9 +499,27 @@ export default function Index() {
                       <span className="text-8xl animate-bounce">🧼💧</span>
                     </div>
                   )}
+                  {isKissing && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-pink-500/40 via-red-500/40 to-pink-500/40 flex items-center justify-center animate-fade-in">
+                      <div className="text-center space-y-4 animate-bounce">
+                        <span className="text-9xl">💋</span>
+                        <span className="text-6xl block">💕✨</span>
+                      </div>
+                    </div>
+                  )}
+                  {animationEffect === 'kiss' && !isKissing && (
+                    <div className="absolute inset-0 flex items-center justify-center animate-fade-in pointer-events-none">
+                      <span className="text-8xl animate-ping">💖</span>
+                    </div>
+                  )}
                   {isSick && !isWashing && (
                     <div className="absolute top-4 right-4 bg-red-500/80 rounded-full p-3 animate-pulse">
                       <span className="text-4xl">🤒</span>
+                    </div>
+                  )}
+                  {stats.love === 100 && !isKissing && (
+                    <div className="absolute top-4 left-4 bg-pink-500/80 rounded-full p-3 animate-pulse">
+                      <span className="text-4xl">💕</span>
                     </div>
                   )}
                 </div>
@@ -625,13 +664,23 @@ export default function Index() {
                       Погладить
                     </Button>
 
-                    <Button
-                      onClick={washCookie}
-                      className="bg-gradient-to-r from-blue-400 to-blue-600 hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-white"
-                    >
-                      <Icon name="Droplets" size={20} />
-                      Помыть
-                    </Button>
+                    {stats.love === 100 ? (
+                      <Button
+                        onClick={kissCookie}
+                        className="bg-gradient-to-r from-pink-500 via-red-500 to-pink-500 hover:scale-110 transition-all font-bold text-base py-6 rounded-xl border-4 border-yellow-400 shadow-2xl text-white animate-pulse"
+                      >
+                        <Icon name="HeartHandshake" size={20} />
+                        💋 Поцеловать
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={washCookie}
+                        className="bg-gradient-to-r from-blue-400 to-blue-600 hover:scale-105 transition-all font-bold text-base py-6 rounded-xl border-4 border-foreground/20 shadow-lg text-white"
+                      >
+                        <Icon name="Droplets" size={20} />
+                        Помыть
+                      </Button>
+                    )}
 
                     <Button
                       onClick={hitCookie}
